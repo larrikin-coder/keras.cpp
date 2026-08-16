@@ -9,7 +9,10 @@
 #include <cassert>
 
 using namespace std;
-using ValuePtr = shared_ptr<Value> //shared pointer so that when the memory increase we can increase the size of heap 
+
+class Value;
+
+using ValuePtr = shared_ptr<Value>; //shared pointer so that when the memory increase we can increase the size of heap 
 
 class Value : public enable_shared_from_this<Value>{
     private:
@@ -28,8 +31,29 @@ class Value : public enable_shared_from_this<Value>{
         ~Value(){ 
             --Value::currentID; //destructor
         }
+        
+        static ValuePtr add(const ValuePtr& lhs,const ValuePtr& rhs){
+            auto out = Value::create(lhs->data+rhs->data,"+");
+            return out;
+        }
+
+        static ValuePtr multiply(const ValuePtr& lhs,const ValuePtr& rhs){
+            auto out = Value::create(lhs->data*rhs->data,"*");
+            return out;
+        }
+        static ValuePtr subtract(const ValuePtr& lhs,const ValuePtr& rhs){
+            auto out = Value::create(lhs->data-rhs->data,"-");
+            return out;
+        }
 };
 
 
+int main(){
+    auto a = Value::create(1.0, "");
+    auto b = Value::create(2.0, "");
+    auto c = Value::add(a,b);
+    assert(c->data == 3.0);
+    asset(c->op == "+");
 
+}
 
