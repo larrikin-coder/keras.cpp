@@ -35,17 +35,38 @@ class Value : public enable_shared_from_this<Value>{
         static ValuePtr add(const ValuePtr& lhs,const ValuePtr& rhs){
             auto out = Value::create(lhs->data+rhs->data,"+");
             out->prev = {lhs,rhs};
+            out->backward = [lhs_weak = weak_ptr<Value>(lhs),rhs_weak = weak_ptr<Value>(rhs),out_weak = weak_ptr<Value>(out)](){
+                // lhs->grad += out->grad;
+                // rhs->grad += out->grad;
+                lhs_weak.lock()->grad += out_weak.lock()->grad;
+                rhs_weak.lock()->grad += out_weak.lock()->grad;
+
+            }
             return out;
         }
 
         static ValuePtr multiply(const ValuePtr& lhs,const ValuePtr& rhs){
             auto out = Value::create(lhs->data*rhs->data,"*");
             out->prev = {lhs,rhs};
+            out->backward = [lhs_weak = weak_ptr<Value>(lhs),rhs_weak = weak_ptr<Value>(rhs),out_weak = weak_ptr<Value>(out)](){
+                // lhs->grad += out->grad;
+                // rhs->grad += out->grad;
+                lhs_weak.lock()->grad += rhs_weak.lock()->data*out_weak.lock()->grad;
+                rhs_weak.lock()->grad += lhs_weak.lock()->data*out_weak.lock()->grad;
+
+            }
             return out;
         }
         static ValuePtr subtract(const ValuePtr& lhs,const ValuePtr& rhs){
             auto out = Value::create(lhs->data-rhs->data,"-");
             out->prev = {lhs,rhs};
+            out->backward = [lhs_weak = weak_ptr<Value>(lhs),rhs_weak = weak_ptr<Value>(rhs),out_weak = weak_ptr<Value>(out)](){
+                // lhs->grad += out->grad;
+                // rhs->grad += out->grad;
+                lhs_weak.lock()->grad += out_weak.lock()->grad;
+                rhs_weak.lock()->grad -= out_weak.lock()->grad;
+
+            }
             return out;
         }
         void print(){
