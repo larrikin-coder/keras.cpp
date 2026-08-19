@@ -76,6 +76,24 @@ class Value : public enable_shared_from_this<Value>{
             };
             return out;
         }
+        
+        static ValuePtr pow(const ValuePtr& base, float exponent) {
+            float newValue = std::pow(base->data, exponent);
+            auto out = Value::create(newValue, "^");
+            out->prev = {base};
+            out->backward = [base_weak = std::weak_ptr<Value>(base), out_weak = std::weak_ptr<Value>(out), exponent](){
+                if (auto base = base_weak.lock()) {
+                    base->grad += exponent * std::pow(base->data, exponent - 1) * out_weak.lock()->grad;
+                }
+            };
+            return out;
+        }
+        
+        static ValuePtr divide(const ValuePtr& lhs, const ValuePtr& rhs) {
+            auto reciprocal = pow(rhs, -1);
+            return multiply(lhs, reciprocal);
+        }
+
         void print(){
             cout << "[data=" <<this->data<<", grad="<<this->grad<<']'<<endl;
         }
