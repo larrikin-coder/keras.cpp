@@ -106,6 +106,18 @@ class Value : public enable_shared_from_this<Value>{
 
         }
 
+        static ValuePtr sigmoid(const ValuePtr& input){
+            float x = input->data;
+            float val = exp(x) / (1+exp(x));
+            auto out = Value::create(val,"Sigmoid");
+            out->prev = {input};
+            out->backward = [input,out,val](){
+                input->grad += val * (1-val) * out->grad; 
+            };
+            return out;
+            
+        }
+
 
         void print(){
             cout << "[data=" <<this->data<<", grad="<<this->grad<<']'<<endl;
@@ -163,7 +175,7 @@ int main(){
     // assert(d->op == "*");
     // d->print();
     auto loss = Value::add(d,d); //18
-    auto activation = Value::relu(loss);
+    // auto activation = Value::relu(loss);
     loss->backProp();
 
 }
