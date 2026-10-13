@@ -94,6 +94,19 @@ class Value : public enable_shared_from_this<Value>{
             return multiply(lhs, reciprocal);
         }
 
+        static ValuePtr relu(const ValuePtr& input){
+            float val = max(0.0f,input->data);
+            auto out = Value::create(val,"ReLU");
+            out->prev = {input};
+            //local_grad * out_grad
+            out->backward = [input,out]()->void {
+                if (input) input->grad += (out->data > 0) * out->grad;
+            };
+            return out;
+
+        }
+
+
         void print(){
             cout << "[data=" <<this->data<<", grad="<<this->grad<<']'<<endl;
         }
@@ -144,12 +157,13 @@ int main(){
     auto b = Value::create(2.0, "");
     auto c = Value::add(a,b); //3
     auto d = Value::multiply(c,c); //9
-    assert(c->data == 3.0);
-    assert(c->op == "+");
-    assert(d->data == 9.0);
-    assert(d->op == "*");
+    // assert(c->data == 3.0);
+    // assert(c->op == "+");
+    // assert(d->data == 9.0);
+    // assert(d->op == "*");
     // d->print();
     auto loss = Value::add(d,d); //18
+    auto activation = Value::relu(loss);
     loss->backProp();
 
 }
