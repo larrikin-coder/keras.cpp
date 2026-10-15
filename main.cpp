@@ -161,7 +161,33 @@ class Value : public enable_shared_from_this<Value>{
 
 size_t Hash::operator()(const ValuePtr value) const {
     return hash<string>()(value.get()->op) ^ hash<float>()(value.get()->data);
-}
+};
+
+
+
+
+enum ActivationType{
+    RELU,
+    SIGMOID
+};
+
+class Activation{
+    static shared_ptr<Value> relu(const shared_ptr<Value>& val){
+        return Value::relu(val);
+    };
+    static shared_ptr<Value> sigmoid(const shared_ptr<Value>& val){
+        return Value::sigmoid(val);
+    };
+};
+
+public:
+    static inline unordered_map<ActivationType,shared_ptr<Value>(shared_ptr<Value>&) >> mActivationFcn = {
+        {ActivationType::RELU, &Relu};
+        {ActivationType::SIGMOID, &Sigmoid};
+
+    }
+
+
 
 
 int main(){
